@@ -1,0 +1,7 @@
+{
+  "name": "lifedash",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}
