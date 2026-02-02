@@ -42,3 +42,8 @@ export function HabitList({ habits }: Props) {
     </div>
   )
 }
+
+updateHabitOptimistic(habit.id, "completed");
+
+fetch(`/api/habits/${habit.id}/log/${date}`, { method: "POST" })
+  .catch(() => refetchDaily());

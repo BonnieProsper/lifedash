@@ -38,3 +38,9 @@ export default async function DailyPage({
     </main>
   )
 }
+
+
+// add here or somehwere else: 
+if (date > today) throw error;
+if (date < today - 30) throw error;
+if (day.is_closed) throw error;

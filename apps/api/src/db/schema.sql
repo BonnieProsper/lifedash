@@ -142,3 +142,10 @@ create table goals (
   created_at timestamptz not null default now(),
   completed_at timestamptz
 );
+
+create table latent_state (
+  user_id uuid primary key,
+  motivation_score numeric not null,
+  fatigue_score numeric not null,
+  updated_at timestamp not null default now()
+);
