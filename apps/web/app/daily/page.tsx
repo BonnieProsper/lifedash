@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { HabitList } from "./components/HabitList"
-import { useDailyStore } from "./components/store/useDailyStore"
+import { useDailyStore } from "./store/useDailyStore"
 import { DailyResponse } from "@/types/daily"
 import TopInsightCard from "./components/TopInsightCard"
 
