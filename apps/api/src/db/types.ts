@@ -112,3 +112,15 @@ export interface Database {
   goals: GoalsTable
 }
 
+
+
+/*
+TO ADD
+type LatentState = {
+  date: string
+  motivation: number        // inferred
+  fatigue: number           // inferred
+  momentum: number          // inferred
+  confidence: number        // uncertainty
+}
+*/

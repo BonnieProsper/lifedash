@@ -11,6 +11,8 @@ import metricsRoutes from "./routes/metrics"
 import insightRoutes from "./routes/insights"
 import streakRoutes from "./routes/streaks"
 import debugRoutes from "./routes/debug"
+import dailyRoutes from "./routes/daily"
+
 
 export function buildApp() {
   const app = Fastify({ logger: true })
@@ -22,6 +24,8 @@ export function buildApp() {
   app.register(dayRoutes, { prefix: "/api/day" })
   app.register(habitRoutes, { prefix: "/api/habits" })
   app.register(mitRoutes, { prefix: "/api/mit" })
+  app.register(dailyRoutes, { prefix: "/api" })
+
 
   // Analytics & insights
   app.register(metricsRoutes, { prefix: "/api/metrics" })
