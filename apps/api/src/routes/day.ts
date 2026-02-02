@@ -13,15 +13,28 @@ export default async function dayRoutes(app: FastifyInstance) {
     note: z.string().optional(),
   })
 
+  // POST /api/day/:date/checkin
   app.post("/:date/checkin", async (req, reply) => {
-    if (!req.user) {
-      reply.code(401).send({ error: "Unauthorized" })
-      return
-    }
+    if (!req.user) return reply.code(401).send({ error: "Unauthorized" })
 
     const userId = req.user.id
     const { date } = req.params as { date: string }
     const body = checkinSchema.parse(req.body)
+
+    // ✅ invariants
+    const today = new Date().toISOString().slice(0, 10)
+    if (date > today) return reply.code(400).send({ error: "Cannot write future dates" })
+    if (date < new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
+      return reply.code(400).send({ error: "Cannot write older than 30 days" })
+
+    const existingDay = await db
+      .selectFrom("days")
+      .selectAll()
+      .where("user_id", "=", userId)
+      .where("date", "=", date)
+      .executeTakeFirst()
+
+    if (existingDay?.closed_at) return reply.code(400).send({ error: "Day is closed" })
 
     await db
       .insertInto("days")
@@ -51,11 +64,9 @@ export default async function dayRoutes(app: FastifyInstance) {
     reply.send({ ok: true })
   })
 
+  // GET /api/day/:date
   app.get("/:date", async (req, reply) => {
-    if (!req.user) {
-      reply.code(401).send({ error: "Unauthorized" })
-      return
-    }
+    if (!req.user) return reply.code(401).send({ error: "Unauthorized" })
 
     const userId = req.user.id
     const { date } = req.params as { date: string }
@@ -72,20 +83,8 @@ export default async function dayRoutes(app: FastifyInstance) {
       .where("days.date", "=", date)
       .executeTakeFirst()
 
-    if (!day) {
-      reply.code(404).send({ error: "Day not found" })
-      return
-    }
+    if (!day) return reply.code(404).send({ error: "Day not found" })
 
     reply.send(day)
   })
 }
-
-
-// add
-
-const today = new Date().toISOString().slice(0, 10)
-if (date > today) throw new Error("Cannot write future dates")
-if (date < new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
-  throw new Error("Cannot write older than 30 days")
-if (day.is_closed) throw new Error("Day is closed")
