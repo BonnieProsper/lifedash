@@ -1,49 +1,37 @@
 "use client"
 
-type Habit = {
-  id: string
-  name: string
-  log: {
-    status: "completed" | "skipped" | "failed"
-  } | null
-}
+import HabitItem from "./HabitItem"
+import { useDailyStore } from "./store/useDailyStore"
+import { DailyResponse } from "@/types/daily"
 
 type Props = {
-  habits: Habit[]
+  habits: DailyResponse["habits"]
+  date: string
 }
 
-export function HabitList({ habits }: Props) {
-  async function updateHabit(habitId: string, status: string) {
-    await fetch("/api/day/habit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ habitId, status }),
-    })
-  }
+export function HabitList({ habits, date }: Props) {
+  const { updateHabitOptimistic } = useDailyStore()
 
   return (
     <div>
       <h3>Habits</h3>
       {habits.map(h => (
-        <label key={h.id} style={{ display: "block" }}>
-          <input
-            type="checkbox"
-            checked={h.log?.status === "completed"}
-            onChange={e =>
-              updateHabit(
-                h.id,
-                e.target.checked ? "completed" : "skipped"
-              )
-            }
-          />
-          {h.name}
-        </label>
+        <HabitItem
+          key={h.id}
+          habit={h}
+          date={date}
+          onUpdate={(status) => {
+            updateHabitOptimistic(h.id, status)
+            fetch(`/api/habits/${h.id}/log/${date}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status }),
+            }).catch(() => {
+              // optionally rollback or refetch
+            })
+          }}
+        />
       ))}
     </div>
   )
 }
-
-updateHabitOptimistic(habit.id, "completed");
-
-fetch(`/api/habits/${habit.id}/log/${date}`, { method: "POST" })
-  .catch(() => refetchDaily());

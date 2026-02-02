@@ -1,46 +1,28 @@
-import { api } from "@/app/lib/api"
-import { DateNavigator } from "./components/DateNavigator"
-import { HabitList } from "./components/HabitList"
-import { MITList } from "./components/MITList"
-import { MetricsForm } from "./components/MetricsForm"
-import { NotesEditor } from "./components/NotesEditor"
-import TopInsightCard from "./components/TopInsightCard"
-import { DailyPayload } from "./types"
+"use client"
 
-export default async function DailyPage({
-  searchParams,
-}: {
-  searchParams?: { date?: string }
-}) {
-  const date = searchParams?.date
-  const daily = await api(
-    date ? `daily?date=${date}` : "daily"
-  ) as DailyPayload
+import { useEffect } from "react"
+import { HabitList } from "./components/HabitList"
+import { useDailyStore } from "./components/store/useDailyStore"
+import { DailyResponse } from "@/types/daily"
+import TopInsightCard from "./components/TopInsightCard"
+
+export default function DailyPage() {
+  const { data, setData } = useDailyStore()
+
+  useEffect(() => {
+    fetch("/api/daily")
+      .then((res) => res.json())
+      .then((json: DailyResponse) => setData(json))
+  }, [])
+
+  if (!data) return <div>Loading...</div>
 
   return (
-    <main style={{ maxWidth: 700, margin: "0 auto" }}>
-      <DateNavigator
-        date={daily.date}
-        onChange={d => {
-          window.location.href = `/daily?date=${d}`
-        }}
-      />
-
-      <TopInsightCard insight={daily.topInsight} />
-
-      <HabitList habits={daily.habits} />
-
-      <MITList mits={daily.mits} />
-
-      <MetricsForm inputs={daily.inputs} />
-
-      <NotesEditor note={daily.inputs.note} />
-    </main>
+    <div>
+      <h1>Daily Dashboard</h1>
+      <HabitList habits={data.habits} date={data.date} />
+      <TopInsightCard insight={data.topInsight} />
+      {/* You can add sleep/mood/energy inputs here */}
+    </div>
   )
 }
-
-
-// add here or somehwere else: 
-if (date > today) throw error;
-if (date < today - 30) throw error;
-if (day.is_closed) throw error;

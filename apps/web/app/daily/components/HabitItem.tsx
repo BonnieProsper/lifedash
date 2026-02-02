@@ -1,28 +1,17 @@
 "use client"
 
 type Props = {
-  habit: any
+  habit: { id: string; name: string; log: { status: "completed" | "skipped" | "failed" } | null }
   date: string
+  onUpdate: (status: "completed" | "skipped" | "failed") => void
 }
 
-export default function HabitItem({ habit, date }: Props) {
-  async function setStatus(status: "completed" | "skipped") {
-    await fetch("/api/habit_logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        habit_id: habit.id,
-        date,
-        status,
-      }),
-    })
-  }
-
+export default function HabitItem({ habit, date, onUpdate }: Props) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
       <span>{habit.name}</span>
-      <button onClick={() => setStatus("completed")}>✓</button>
-      <button onClick={() => setStatus("skipped")}>✕</button>
+      <button onClick={() => onUpdate("completed")}>✓</button>
+      <button onClick={() => onUpdate("skipped")}>✕</button>
     </div>
   )
 }

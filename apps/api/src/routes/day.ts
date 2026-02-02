@@ -80,3 +80,12 @@ export default async function dayRoutes(app: FastifyInstance) {
     reply.send(day)
   })
 }
+
+
+// add
+
+const today = new Date().toISOString().slice(0, 10)
+if (date > today) throw new Error("Cannot write future dates")
+if (date < new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
+  throw new Error("Cannot write older than 30 days")
+if (day.is_closed) throw new Error("Day is closed")

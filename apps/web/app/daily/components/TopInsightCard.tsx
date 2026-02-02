@@ -1,60 +1,24 @@
 "use client"
 
-type Insight = {
-  key: string
-  text: string
-  because: string[]
-  confidence: number
-  actionable?: boolean
-  advice?: string
-}
+import { DailyResponse } from "@/types/daily"
 
 type Props = {
-  insight: Insight | null
+  insight: DailyResponse["topInsight"]
 }
 
 export default function TopInsightCard({ insight }: Props) {
-  if (!insight) {
-    return <p>No strong insight yet. Keep logging.</p>
-  }
-
-  const { key, text, because, actionable, advice } = insight
-
-  async function sendFeedback(actionTaken: boolean) {
-    await fetch("/api/insights/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        insightKey: key,
-        actionTaken,
-      }),
-    })
-  }
+  if (!insight) return null
 
   return (
-    <div style={{ padding: 16, border: "1px solid #ddd" }}>
-      <strong>{text}</strong>
-
+    <div style={{ border: "1px solid #ccc", padding: 12, marginTop: 16 }}>
+      <h3>Insight</h3>
+      <p>{insight.text}</p>
       <ul>
-        {because.map((b, i) => (
+        {insight.because.map((b, i) => (
           <li key={i}>{b}</li>
         ))}
       </ul>
-
-      {actionable && advice && (
-        <p>
-          <em>Suggestion: {advice}</em>
-        </p>
-      )}
-
-      <div style={{ marginTop: 12 }}>
-        <button onClick={() => sendFeedback(true)}>
-          I did this
-        </button>
-        <button onClick={() => sendFeedback(false)}>
-          I didn’t
-        </button>
-      </div>
+      {insight.advice && <p><b>Advice:</b> {insight.advice}</p>}
     </div>
   )
 }
