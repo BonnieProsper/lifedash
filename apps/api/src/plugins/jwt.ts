@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from "fastify"
-import fastifyJwt from "@fastify/jwt"
-import type { AuthUser } from "./auth"
+import { AuthUser } from "./auth"
+import jwt from "jsonwebtoken"
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -9,11 +9,7 @@ declare module "fastify" {
 }
 
 export const jwtPlugin: FastifyPluginAsync = async (fastify) => {
-  fastify.register(fastifyJwt, {
-    secret: process.env.SUPABASE_JWT_SECRET!,
-  })
-
-  fastify.addHook("preHandler", async (req, reply) => {
+  fastify.decorate("verifyJWT", async (req: any) => {
     const authHeader = req.headers.authorization
     if (!authHeader) {
       req.user = undefined
@@ -23,9 +19,9 @@ export const jwtPlugin: FastifyPluginAsync = async (fastify) => {
     const token = authHeader.replace("Bearer ", "")
 
     try {
-      const payload: any = await fastify.jwt.verify(token)
-      req.user = { id: payload.sub, isPro: false } // add any required AuthUser fields
-    } catch (err) {
+      const payload: any = jwt.verify(token, process.env.SUPABASE_JWT_SECRET!)
+      req.user = { id: payload.sub, isPro: false } // add fields if needed
+    } catch {
       req.user = undefined
     }
   })

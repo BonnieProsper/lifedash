@@ -1,7 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify"
 import jwt from "jsonwebtoken"
 
-type AuthUser = {
+// ✅ Export AuthUser so jwt.ts can import it
+export type AuthUser = {
   id: string
   isPro: boolean
 }
@@ -25,9 +26,7 @@ export async function authPlugin(app: FastifyInstance) {
     async (req: FastifyRequest, reply: FastifyReply) => {
       const url = req.raw.url || ""
 
-      if (PUBLIC_PREFIXES.some(p => url.startsWith(p))) {
-        return
-      }
+      if (PUBLIC_PREFIXES.some((p) => url.startsWith(p))) return
 
       const header = req.headers.authorization
       if (!header) {
@@ -37,10 +36,7 @@ export async function authPlugin(app: FastifyInstance) {
 
       try {
         const token = header.replace("Bearer ", "")
-        const payload = jwt.verify(
-          token,
-          process.env.SUPABASE_JWT_SECRET!
-        ) as any
+        const payload = jwt.verify(token, process.env.SUPABASE_JWT_SECRET!) as any
 
         req.user = {
           id: payload.sub,
