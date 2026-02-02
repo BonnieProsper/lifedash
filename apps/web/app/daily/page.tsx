@@ -1,28 +1,26 @@
 "use client"
 
 import { useEffect } from "react"
-import { HabitList } from "./components/HabitList"
 import { useDailyStore } from "./store/useDailyStore"
-import { DailyResponse } from "@/types/daily"
-import TopInsightCard from "./components/TopInsightCard"
+import HabitList from "./components/HabitList"
 
 export default function DailyPage() {
-  const { data, setData } = useDailyStore()
+  const day = useDailyStore((s) => s.day)
+  const setDay = useDailyStore((s) => s.setDay)
 
   useEffect(() => {
-    fetch("/api/daily")
+    fetch("/api/day/2026-02-02")
       .then((res) => res.json())
-      .then((json: DailyResponse) => setData(json))
-  }, [])
+      .then(setDay)
+      .catch(console.error)
+  }, [setDay])
 
-  if (!data) return <div>Loading...</div>
+  if (!day) return <div>Loading...</div>
 
   return (
     <div>
-      <h1>Daily Dashboard</h1>
-      <HabitList habits={data.habits} date={data.date} />
-      <TopInsightCard insight={data.topInsight} />
-      {/* You can add sleep/mood/energy inputs here */}
+      <h2>Daily Dashboard: {day.date}</h2>
+      <HabitList habits={day.habits} date={day.date} />
     </div>
   )
 }

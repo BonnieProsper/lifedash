@@ -1,27 +1,32 @@
 import { FastifyPluginAsync } from "fastify"
+import fastifyJwt from "@fastify/jwt"
+import type { AuthUser } from "./auth"
 
-const jwtPlugin: FastifyPluginAsync = async (fastify) => {
-  fastify.register(require("@fastify/jwt"), {
+declare module "fastify" {
+  interface FastifyRequest {
+    user?: AuthUser
+  }
+}
+
+export const jwtPlugin: FastifyPluginAsync = async (fastify) => {
+  fastify.register(fastifyJwt, {
     secret: process.env.SUPABASE_JWT_SECRET!,
-    decode: { complete: true },
   })
 
-  // PreHandler to attach user to req.user
   fastify.addHook("preHandler", async (req, reply) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (!authHeader) {
-        req.user = null
-        return
-      }
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+      req.user = undefined
+      return
+    }
 
-      const token = authHeader.replace("Bearer ", "")
-      const payload = await req.jwtVerify(token)
-      req.user = { id: payload.sub } // attach user id
+    const token = authHeader.replace("Bearer ", "")
+
+    try {
+      const payload: any = await fastify.jwt.verify(token)
+      req.user = { id: payload.sub, isPro: false } // add any required AuthUser fields
     } catch (err) {
-      req.user = null
+      req.user = undefined
     }
   })
 }
-
-export default jwtPlugin

@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { DailyResponse, DailyHabit, HabitStatus } from "@/types/daily"
+import type { DailyResponse, DailyHabit, HabitStatus } from "@/types/daily"
 
 interface DailyState {
   day?: DailyResponse
