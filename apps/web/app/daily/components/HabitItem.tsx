@@ -1,21 +1,23 @@
 "use client"
 
+import { useDailyStore } from "../store/useDailyStore"
+import type { DailyHabit, HabitStatus } from "@/types/daily"
+
 type Props = {
-  habit: any
+  habit: DailyHabit
   date: string
 }
 
 export default function HabitItem({ habit, date }: Props) {
-  async function setStatus(status: "completed" | "skipped") {
-    await fetch("/api/habit_logs", {
+  const updateHabit = useDailyStore((s) => s.updateHabit)
+
+  async function setStatus(status: HabitStatus) {
+    await fetch(`/api/habits/${habit.id}/log/${date}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        habit_id: habit.id,
-        date,
-        status,
-      }),
+      body: JSON.stringify({ status }),
     })
+    updateHabit(habit.id, status)
   }
 
   return (

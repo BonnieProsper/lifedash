@@ -1,26 +1,21 @@
-"use client"
-
 import { create } from "zustand"
-import { DailyResponse, HabitStatus } from "@/types/daily"
+import { DailyResponse, DailyHabit, HabitStatus } from "@/types/daily"
 
-interface DailyStore {
-  data: DailyResponse | null
-  updateHabitOptimistic: (habitId: string, status: HabitStatus) => void
-  setData: (data: DailyResponse) => void
+interface DailyState {
+  day?: DailyResponse
+  setDay: (data: DailyResponse) => void
+  updateHabit: (habitId: string, status: HabitStatus) => void
 }
 
-export const useDailyStore = create<DailyStore>((set) => ({
-  data: null,
-  setData: (data) => set({ data }),
-  updateHabitOptimistic: (habitId, status) =>
-    set((state) => ({
-      data: state.data
-        ? {
-            ...state.data,
-            habits: state.data.habits.map(h =>
-              h.id === habitId ? { ...h, log: { status } } : h
-            ),
-          }
-        : null,
-    })),
+export const useDailyStore = create<DailyState>((set) => ({
+  day: undefined,
+  setDay: (data) => set({ day: data }),
+  updateHabit: (habitId, status) =>
+    set((state) => {
+      if (!state.day) return state
+      const updatedHabits = state.day.habits.map((h) =>
+        h.id === habitId ? { ...h, log: { status } } : h
+      )
+      return { day: { ...state.day, habits: updatedHabits } }
+    }),
 }))

@@ -5,6 +5,7 @@
     "apps/*"
   ],
   "dependencies": {
+    "@fastify/jwt": "^10.0.0",
     "zustand": "^5.0.11"
   }
 }
