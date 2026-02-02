@@ -1,6 +1,6 @@
 "use client"
 
-import create from "zustand"
+import { create } from "zustand"
 import { DailyResponse, HabitStatus } from "@/types/daily"
 
 interface DailyStore {
