@@ -6,6 +6,8 @@
   ],
   "dependencies": {
     "@fastify/jwt": "^10.0.0",
+    "@supabase/supabase-js": "^2.93.3",
+    "dotenv": "^17.2.3",
     "zustand": "^5.0.11"
   }
 }

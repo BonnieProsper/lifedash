@@ -11,7 +11,7 @@ export function requirePro(
   }
 
   if (!req.user.isPro) {
-    reply.code(402).send({ error: "Upgrade required" })
+    reply.code(402).send({ error: "Upgrade required" }) // change to 403
     return
   }
 

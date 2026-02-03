@@ -1,9 +1,9 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify"
-import jwt from "jsonwebtoken"
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify"
+import { createClient } from "@supabase/supabase-js"
 
-// ✅ Export AuthUser so jwt.ts can import it
 export type AuthUser = {
   id: string
+  email: string
   isPro: boolean
 }
 
@@ -14,38 +14,42 @@ declare module "fastify" {
 }
 
 const PUBLIC_PREFIXES = [
+  "/health",
   "/api/insights/top",
   "/api/insights/today",
   "/api/insights/weekly",
-  "/health",
 ]
 
 export async function authPlugin(app: FastifyInstance) {
-  app.addHook(
-    "preHandler",
-    async (req: FastifyRequest, reply: FastifyReply) => {
-      const url = req.raw.url || ""
-
-      if (PUBLIC_PREFIXES.some((p) => url.startsWith(p))) return
-
-      const header = req.headers.authorization
-      if (!header) {
-        reply.code(401)
-        return reply.send({ error: "Unauthorized" })
-      }
-
-      try {
-        const token = header.replace("Bearer ", "")
-        const payload = jwt.verify(token, process.env.SUPABASE_JWT_SECRET!) as any
-
-        req.user = {
-          id: payload.sub,
-          isPro: payload.user_metadata?.plan === "pro",
-        }
-      } catch {
-        reply.code(401)
-        return reply.send({ error: "Invalid token" })
-      }
-    }
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!
   )
+
+  app.addHook("preHandler", async (req, reply) => {
+    const url = req.raw.url ?? ""
+
+    if (PUBLIC_PREFIXES.some((p) => url.startsWith(p))) return
+
+    const header = req.headers.authorization
+    if (!header?.startsWith("Bearer ")) {
+      reply.code(401).send({ error: "Unauthorized" })
+      return
+    }
+
+    const token = header.slice("Bearer ".length)
+
+    const { data, error } = await supabase.auth.getUser(token)
+
+    if (error || !data.user) {
+      reply.code(401).send({ error: "Invalid token" })
+      return
+    }
+
+    req.user = {
+      id: data.user.id,
+      email: data.user.email ?? "",
+      isPro: data.user.user_metadata?.plan === "pro",
+    }
+  })
 }
